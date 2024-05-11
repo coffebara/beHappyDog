@@ -15,7 +15,7 @@ public class ResponseDto {
     private String message;
 
     public ResponseDto() {
-        this.code = ResponseMessage.SUCCESS;
+        this.code = ResponseCode.SUCCESS;
         this.message = ResponseMessage.SUCCESS;
     }
 
