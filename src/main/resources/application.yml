@@ -17,6 +17,7 @@ spring:
         format_sql: true
         default_batch_fetch_size: 100
 
+# 파일 업로드 설정
 #  servlet:
 #    multipart:
 #      enabled: true         # 파일 업로드 가능 여부
@@ -27,8 +28,22 @@ spring:
   thymeleaf:
     cache: false
 
+# Gmail 설정
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: coffebara001@gmail.com
+    password: wxpn likk xuwi pevv
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 logging.level:
   org.hibernate.SQL: debug
 
 # jwt Secret Key
 secret-key: ThisStatementIsJwtSecretKeyDoNotUseThisStatement
+
