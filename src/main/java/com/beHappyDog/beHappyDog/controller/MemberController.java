@@ -1,9 +1,6 @@
 package com.beHappyDog.beHappyDog.controller;
 
-import com.beHappyDog.beHappyDog.dto.EmailCertificationRequestDto;
-import com.beHappyDog.beHappyDog.dto.EmailCertificationResponseDto;
-import com.beHappyDog.beHappyDog.dto.EmailCheckRequestDto;
-import com.beHappyDog.beHappyDog.dto.EmailCheckResponseDto;
+import com.beHappyDog.beHappyDog.dto.*;
 import com.beHappyDog.beHappyDog.service.MemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +26,12 @@ public class MemberController {
     @PostMapping("/email-certification")
     public ResponseEntity<? super EmailCertificationResponseDto> emailCertification(@RequestBody @Valid EmailCertificationRequestDto requestBody) {
         ResponseEntity<? super EmailCertificationResponseDto> response = memberService.emailCertification(requestBody);
+        return response;
+    }
+
+    @PostMapping("/check-certification")
+    public ResponseEntity<? super CheckCertificationResponseDto> checkCertification(@RequestBody @Valid CheckCertificationRequestDto requestBody) {
+        ResponseEntity<? super CheckCertificationResponseDto> response = memberService.checkCertification(requestBody);
         return response;
     }
 }
