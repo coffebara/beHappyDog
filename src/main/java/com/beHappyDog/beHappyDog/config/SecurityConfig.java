@@ -21,8 +21,9 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable) // csrf 비활성화, Thymeleaf는 csrf 토큰을 자동으로 주입한다.
                 .authorizeHttpRequests((auth) -> auth   // 인증, 인가 설정
                         .requestMatchers("/", "/login", "/join").permitAll() // 모두 허용
-                        .requestMatchers("/user/**").authenticated()
-                        .requestMatchers("/admin/**").hasRole("ADMIN").anyRequest().permitAll()
+                        .requestMatchers("/api/v1/user/**").hasRole("USER")
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        .anyRequest().permitAll()
                 )
                 .formLogin((auth) -> auth   // 폼 기반 로그인 설정
                         .loginPage("/adminLogin") // 로그인 페이지

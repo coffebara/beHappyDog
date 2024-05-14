@@ -2,12 +2,7 @@ package com.beHappyDog.beHappyDog.dto;
 
 import com.beHappyDog.beHappyDog.common.ResponseCode;
 import com.beHappyDog.beHappyDog.common.ResponseMessage;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 

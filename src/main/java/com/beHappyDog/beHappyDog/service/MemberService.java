@@ -6,14 +6,13 @@ import com.beHappyDog.beHappyDog.domain.entity.Member;
 import com.beHappyDog.beHappyDog.domain.value.Role;
 import com.beHappyDog.beHappyDog.dto.*;
 import com.beHappyDog.beHappyDog.provider.EmailProvider;
+import com.beHappyDog.beHappyDog.provider.JwtProvider;
 import com.beHappyDog.beHappyDog.repository.CertificationRepository;
 import com.beHappyDog.beHappyDog.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import javax.swing.*;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +22,7 @@ public class MemberService {
     private final CertificationRepository certificationRepository;
     private final EmailProvider emailProvider;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final JwtProvider jwtProvider;
 
     // 이메일 검증
     public ResponseEntity<? super EmailCheckResponseDto> emailCheck(EmailCheckRequestDto dto) {
@@ -108,20 +108,21 @@ public class MemberService {
 
         try {
 
+            // 이메일 중복 검증
             String email = dto.getEmail();
-            // 중복 검증
             boolean isExistEmail = memberRepository.existsByEmail(email);
             if (isExistEmail) {
                 return SignUpResponseDto.duplicateEmail();
             }
 
+            // 인증메일 검증
             String certificationNumber = dto.getCertificationNumber();
             Certification certification = certificationRepository.findByEmail(email);
-            // 인증메일 검증
             boolean isMatched = certification.getEmail().equals(email) && certification.getCertificationNumber().equals(certificationNumber);
             if (!isMatched) {
                 return SignUpResponseDto.certificationFail();
             }
+
             String password = dto.getPassword();
             String name = dto.getName();
 
@@ -132,6 +133,9 @@ public class MemberService {
                     .type("app")
                     .role(Role.ROLE_USER)
                     .build();
+            memberRepository.save(member);
+            // 가입 후 인증내역 삭제
+            certificationRepository.deleteByEmail(email);
 
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -139,6 +143,39 @@ public class MemberService {
         }
 
         return SignUpResponseDto.success();
+    }
+
+    public ResponseEntity<? super SignInResponseDto> signIn(SignInRequestDto dto) {
+
+        String token = null;
+
+        try {
+
+            // 이메일 확인
+            String email = dto.getEmail();
+            Member member = memberRepository.findByEmail(email);
+            if (member == null) {
+                return SignInResponseDto.signUpFail();
+            }
+
+            // 비밀번호 확인
+            String password = dto.getPassword();
+            String encodedPassword = member.getPassword();
+            boolean isMatched = bCryptPasswordEncoder.matches(password, encodedPassword);
+            if (!isMatched) {
+                return SignInResponseDto.signUpFail();
+            }
+
+            // 토큰 생성
+            token = jwtProvider.create(email);
+
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+
+
+        return SignInResponseDto.success(token);
     }
 
 }

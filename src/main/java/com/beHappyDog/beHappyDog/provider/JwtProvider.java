@@ -15,7 +15,7 @@ import java.util.Date;
 @Component
 public class JwtProvider {
 
-    @Value("${secret-key") // application.yml 에 설정한 값을 가져옴
+    @Value("${secret-key}") // application.yml 에 설정한 값을 가져옴
     private String secretKey;
 
     //발급
@@ -25,7 +25,7 @@ public class JwtProvider {
         Key key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
 
         return Jwts.builder()
-                .signWith(key, SignatureAlgorithm.ES256)
+                .signWith(key, SignatureAlgorithm.HS256)
                 .setSubject(email)
                 .setIssuedAt(new Date()).setExpiration(expiredDate)
                 .compact();
@@ -42,7 +42,7 @@ public class JwtProvider {
             subject = Jwts.parserBuilder()
                     .setSigningKey(key)
                     .build()
-                    .parseClaimsJwt(jwt)
+                    .parseClaimsJws(jwt)
                     .getBody()
                     .getSubject();
 
