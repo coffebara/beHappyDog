@@ -2,13 +2,9 @@ server:
   port: 8081
 
 spring:
-  #  로컬 db
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/behddb?serverTimezone=UTC&characterEncoding=UTF-8
-    username: admin
-    password: admin1234
-
+  profiles:
+    include:
+      - "secret"
   jpa:
     hibernate:
       ddl-auto: none
@@ -28,22 +24,5 @@ spring:
   thymeleaf:
     cache: false
 
-# Gmail 설정
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username: coffebara001@gmail.com
-    password: wxpn likk xuwi pevv
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-
 logging.level:
   org.hibernate.SQL: debug
-
-# jwt Secret Key
-secret-key: ThisStatementIsJwtSecretKeyDoNotUseThisStatement
-
