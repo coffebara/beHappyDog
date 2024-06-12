@@ -1,6 +1,7 @@
 package com.beHappyDog.beHappyDog.config;
 
 import com.beHappyDog.beHappyDog.filter.JwtAuthenticationFilter;
+import com.beHappyDog.beHappyDog.hanlder.OAuth2SuccessHandler;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -14,6 +15,8 @@ import org.springframework.security.config.annotation.web.configurers.CsrfConfig
 import org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -30,6 +33,8 @@ import java.io.IOException;
 public class WebSecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final DefaultOAuth2UserService defaultOAuth2UserService;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
     @Bean
     protected SecurityFilterChain configure(HttpSecurity httpSecurity) throws Exception {
@@ -37,7 +42,6 @@ public class WebSecurityConfig {
         httpSecurity
                 .cors(cors -> cors
                         .configurationSource(corsConfigurationSource())
-
                 )
                 .csrf(CsrfConfigurer::disable)
                 .httpBasic(HttpBasicConfigurer::disable) // 기본인증방식, 현재 Bearer 방식을 사용하기 때문에 비활성화
@@ -45,13 +49,22 @@ public class WebSecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션을 유지하지 않음
                 )
                 .authorizeHttpRequests(request -> request // 권한 인가
-                        .requestMatchers("/", "/api/v1/auth/").permitAll()
+                        .requestMatchers("/", "/api/v1/auth/**", "/oauth2/**").permitAll()
                         .requestMatchers("/api/v1/user/**").hasRole("USER")
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
+                .oauth2Login(oauth2 -> oauth2
+                        .authorizationEndpoint(endpoint -> endpoint.baseUri("/api/v1/auth/oauth2"))
+                        .redirectionEndpoint(endpoint -> endpoint.baseUri("/oauth2/callback/*"))
+                        .userInfoEndpoint(endpoint -> endpoint.userService(defaultOAuth2UserService))
+                        .successHandler(oAuth2SuccessHandler)
+                )
+                // 인증 예외 핸들링
                 .exceptionHandling(httpSecurityExceptionHandlingConfigurer -> httpSecurityExceptionHandlingConfigurer
-                        .authenticationEntryPoint(new FailedAuthenticationEntryPoint())) // 인가 실패시 핸들링
+                        .authenticationEntryPoint(new FailedAuthenticationEntryPoint())
+                )
+                //jwt 필터
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return httpSecurity.build();
@@ -70,6 +83,13 @@ public class WebSecurityConfig {
         source.registerCorsConfiguration("/api/v1/**", corsConfiguration);
 
         return source;
+    }
+
+    //비밀번호 암호화
+    @Bean
+    public BCryptPasswordEncoder bCryptPasswordEncoder() {
+
+        return new BCryptPasswordEncoder();
     }
 }
 
